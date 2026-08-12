@@ -1,0 +1,21 @@
+{
+  "name": "m324-projektarbeit",
+  "version": "0.0.2",
+  "description": "ICT Modul M324 - DevOps-Prozesse - Webapp-Projektarbeit",
+  "main": "server.js",
+  "scripts": {
+    "serve": "nodemon server.js",
+    "test": "jest tests/"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.2.1",
+    "nunjucks": "^3.2.4",
+    "sqlite3": "^6.0.1"
+  },
+  "devDependencies": {
+    "jest": "^30.4.2",
+    "nodemon": "^3.1.14"
+  }
+}

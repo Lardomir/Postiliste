@@ -1,0 +1,9 @@
+.git/
+.env
+.vscode
+data/
+Jenkinsfile
+docker/
+docker-compose.yaml
+node_modules/
+chinook.db

@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="de">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>M324 - DevOps</title>
+	<style>
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			font-family: sans-serif;
+			margin: 0;
+			padding: 0;
+		}
+
+		main {
+			margin: auto;
+			padding: 10px;
+			max-width: 960px;
+			height: 100vh;
+			border-left: 1px solid lightgray;
+			border-right: 1px solid lightgray;
+			box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+		}
+	</style>
+</head>
+
+<body>
+	<main>
+		<h1>M324 - DevOps</h1>
+		<p>
+			Demo Page - Today is the {{today.toLocaleDateString()}}
+		</p>
+		<h2>Some Music Artists (from sqlite db)</h2>
+		{% if err %}
+		<p class="error">Oops: {{err}}</p>
+		{% else %}
+		<ul>
+			{% for artist in rows %}
+			<li>{{artist.Name}}</li>
+			{% endfor %}
+		</ul>
+		{%endif%}
+	</main>
+</body>
+
+</html>
