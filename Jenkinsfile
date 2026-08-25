@@ -23,5 +23,11 @@ pipeline {
         sh 'docker build -f docker/webapp/Dockerfile -t postiliste:${BUILD_NUMBER} .'
       }
     }
+
+    stage('Deploy local production') {
+      steps {
+        sh 'docker compose up -d --build --remove-orphans'
+      }
+    }
   }
 }
