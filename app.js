@@ -1,13 +1,11 @@
 const express = require("express");
 const nunjucks = require("nunjucks");
 const path = require("path");
-const PostRepository = require("./postRepository");
+const createRepository = require("./repositoryFactory");
 
 function createApp(options = {}) {
   const app = express();
-  const repository =
-    options.repository ||
-    new PostRepository(process.env.DB_PATH || path.join(__dirname, "data", "postiliste.db"));
+  const repository = options.repository || createRepository();
 
   nunjucks.configure(path.join(__dirname, "views"), {
     autoescape: true,
