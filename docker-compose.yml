@@ -1,4 +1,19 @@
 services:
+  postgres:
+    image: postgres:17-bookworm
+    environment:
+      POSTGRES_DB: postiliste
+      POSTGRES_USER: postiliste
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postiliste}
+    volumes:
+      - postiliste-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postiliste -d postiliste"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
   postiliste:
     build:
       context: .
@@ -8,9 +23,10 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-      DB_PATH: /app/data/postiliste.db
-    volumes:
-      - postiliste-data:/app/data
+      DATABASE_URL: postgresql://postiliste:${POSTGRES_PASSWORD:-postiliste}@postgres:5432/postiliste
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:3000/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
@@ -19,4 +35,4 @@ services:
       retries: 5
 
 volumes:
-  postiliste-data:
+  postiliste-postgres:
