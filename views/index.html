@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Postiliste</title>
+    <style>
+      body { font-family: system-ui, sans-serif; max-width: 760px; margin: 48px auto; padding: 0 20px; background: #f6f6f6; color: #222; }
+      h1 { margin-bottom: 4px; }
+      .subtitle { color: #666; margin-top: 0; }
+      form.create { display: flex; gap: 8px; margin: 24px 0; }
+      input { flex: 1; padding: 10px 12px; font: inherit; }
+      button { padding: 9px 12px; font: inherit; cursor: pointer; }
+      ul { list-style: none; padding: 0; display: grid; gap: 10px; }
+      li { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+      li.done .title { text-decoration: line-through; color: #777; }
+      .actions { display: flex; gap: 6px; }
+      .actions form { margin: 0; }
+      .error { background: #ffe8e8; border: 1px solid #d99; padding: 10px; border-radius: 6px; }
+      .empty { color: #777; }
+    </style>
+  </head>
+  <body>
+    <h1>Postiliste</h1>
+    <p class="subtitle">A small persistent Post-it list for ICT module M324.</p>
+
+    {% if error %}<p class="error">{{ error }}</p>{% endif %}
+
+    <form class="create" action="/posts" method="post">
+      <input name="title" maxlength="200" placeholder="What needs to be done?" required />
+      <button type="submit">Add</button>
+    </form>
+
+    {% if posts.length %}
+      <ul>
+        {% for post in posts %}
+          <li class="{% if post.completed %}done{% endif %}">
+            <span class="title">{{ post.title }}</span>
+            <div class="actions">
+              <form action="/posts/{{ post.id }}/toggle" method="post">
+                <button type="submit">{% if post.completed %}Reopen{% else %}Done{% endif %}</button>
+              </form>
+              <form action="/posts/{{ post.id }}/delete" method="post">
+                <button type="submit">Delete</button>
+              </form>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty">No Post-its yet.</p>
+    {% endif %}
+  </body>
+</html>

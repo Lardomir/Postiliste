@@ -1,5 +1,18 @@
-FROM node:24-trixie
+FROM node:24-bookworm-slim
 
 WORKDIR /app
+
+COPY package.json package-lock.json ./
+RUN npm install --omit=dev
+
+COPY --chown=node:node app.js server.js postRepository.js library.js ./
+COPY --chown=node:node views ./views
+RUN mkdir -p /app/data && chown -R node:node /app/data
+
+ENV NODE_ENV=production
+ENV PORT=3000
+ENV DB_PATH=/app/data/postiliste.db
 EXPOSE 3000
-CMD npm install && npm run serve
+
+USER node
+CMD ["npm", "start"]
