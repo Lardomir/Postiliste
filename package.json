@@ -1,21 +1,34 @@
 {
-  "name": "m324-projektarbeit",
-  "version": "0.0.2",
-  "description": "ICT Modul M324 - DevOps-Prozesse - Webapp-Projektarbeit",
+  "name": "postiliste",
+  "version": "1.0.0",
+  "description": "M324 DevOps project - persistent shopping list",
   "main": "server.js",
   "scripts": {
+    "start": "node server.js",
     "serve": "nodemon server.js",
-    "test": "jest tests/"
+    "test": "jest tests/ --runInBand",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check": "npm run lint && npm run format:check && npm test",
+    "prepare": "husky || echo Husky skipped",
+    "dev-setup": "npm install && docker compose build",
+    "docker:build": "docker build -f docker/webapp/Dockerfile -t postiliste:local .",
+    "docker:up": "docker compose up --build"
   },
-  "author": "",
+  "author": "Lardomir",
   "license": "ISC",
   "dependencies": {
     "express": "^5.2.1",
     "nunjucks": "^3.2.4",
+    "pg": "^8.16.3",
     "sqlite3": "^6.0.1"
   },
   "devDependencies": {
+    "eslint": "^9.39.1",
+    "husky": "^9.1.7",
     "jest": "^30.4.2",
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "prettier": "^3.6.2"
   }
 }

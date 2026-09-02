@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Postiliste – Einkaufsliste</title>
+    <style>
+      body { font-family: system-ui, sans-serif; max-width: 820px; margin: 48px auto; padding: 0 20px; background: #f6f6f6; color: #222; }
+      h1 { margin-bottom: 4px; }
+      .subtitle { color: #666; margin-top: 0; }
+      form.create { display: grid; grid-template-columns: minmax(0, 1fr) 160px auto; gap: 8px; margin: 24px 0; }
+      input { min-width: 0; padding: 10px 12px; font: inherit; }
+      button { padding: 9px 12px; font: inherit; cursor: pointer; }
+      ul { list-style: none; padding: 0; display: grid; gap: 10px; }
+      li { background: white; border: 1px solid #ddd; border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+      li.purchased .name { text-decoration: line-through; color: #777; }
+      .item { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+      .name { font-weight: 600; overflow-wrap: anywhere; }
+      .quantity { color: #666; white-space: nowrap; }
+      .actions { display: flex; gap: 6px; flex-shrink: 0; }
+      .actions form { margin: 0; }
+      .error { background: #ffe8e8; border: 1px solid #d99; padding: 10px; border-radius: 6px; }
+      .empty { color: #777; }
+      @media (max-width: 650px) {
+        form.create { grid-template-columns: 1fr; }
+        li { align-items: flex-start; flex-direction: column; }
+        .actions { width: 100%; }
+        .actions form { flex: 1; }
+        .actions button { width: 100%; }
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Postiliste</h1>
+    <p class="subtitle">Deine einfache Einkaufsliste für das ICT-Modul M324.</p>
+
+    {% if error %}<p class="error">{{ error }}</p>{% endif %}
+
+    <form class="create" action="/items" method="post">
+      <input name="name" maxlength="200" placeholder="Produkt, z. B. Milch" aria-label="Produkt" required />
+      <input name="quantity" maxlength="50" placeholder="Menge, z. B. 2 l" aria-label="Menge" />
+      <button type="submit">Hinzufügen</button>
+    </form>
+
+    {% if items.length %}
+      <ul>
+        {% for item in items %}
+          <li class="{% if item.purchased %}purchased{% endif %}">
+            <div class="item">
+              <span class="name">{{ item.name }}</span>
+              {% if item.quantity %}<span class="quantity">{{ item.quantity }}</span>{% endif %}
+            </div>
+            <div class="actions">
+              <form action="/items/{{ item.id }}/toggle" method="post">
+                <button type="submit">{% if item.purchased %}Wieder offen{% else %}Gekauft{% endif %}</button>
+              </form>
+              <form action="/items/{{ item.id }}/delete" method="post">
+                <button type="submit">Entfernen</button>
+              </form>
+            </div>
+          </li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="empty">Deine Einkaufsliste ist noch leer.</p>
+    {% endif %}
+  </body>
+</html>
