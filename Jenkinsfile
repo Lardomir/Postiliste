@@ -14,7 +14,7 @@ pipeline {
 
     stage('Install and test') {
       steps {
-        sh 'docker run --rm -v "$WORKSPACE:/app" -w /app node:24-bookworm bash -lc "npm install && npm run check"'
+        sh 'docker run --rm -v "$WORKSPACE:/app" -w /app node:24-trixie bash -lc "npm install && npm run check"'
       }
     }
 
