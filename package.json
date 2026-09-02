@@ -1,7 +1,7 @@
 {
   "name": "postiliste",
   "version": "1.0.0",
-  "description": "M324 DevOps project - persistent Post-it list",
+  "description": "M324 DevOps project - persistent shopping list",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

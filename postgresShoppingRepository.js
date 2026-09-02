@@ -1,6 +1,7 @@
 const { Pool } = require("pg");
+const { normalizeShoppingItem } = require("./shoppingItem");
 
-class PostgresRepository {
+class PostgresShoppingRepository {
   constructor(connectionString) {
     this.pool = new Pool({ connectionString });
     this.ready = this.migrate();
@@ -15,37 +16,37 @@ class PostgresRepository {
 
     const result = await this.pool.query(
       "SELECT version FROM schema_migrations WHERE version = $1",
-      [1]
+      [2]
     );
 
     if (result.rowCount === 0) {
       await this.pool.query(`
-        CREATE TABLE IF NOT EXISTS posts (
+        CREATE TABLE IF NOT EXISTS shopping_items (
           id SERIAL PRIMARY KEY,
-          title TEXT NOT NULL,
-          completed BOOLEAN NOT NULL DEFAULT FALSE,
+          name TEXT NOT NULL,
+          quantity TEXT,
+          purchased BOOLEAN NOT NULL DEFAULT FALSE,
           created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
         )
       `);
-      await this.pool.query("INSERT INTO schema_migrations(version) VALUES ($1)", [1]);
+      await this.pool.query("INSERT INTO schema_migrations(version) VALUES ($1)", [2]);
     }
   }
 
   async getAll() {
     await this.ready;
     const result = await this.pool.query(
-      "SELECT id, title, completed, created_at FROM posts ORDER BY completed, id DESC"
+      "SELECT id, name, quantity, purchased, created_at FROM shopping_items ORDER BY purchased, id DESC"
     );
     return result.rows;
   }
 
-  async create(title) {
+  async create(name, quantity = "") {
     await this.ready;
-    const cleanTitle = String(title || "").trim();
-    if (!cleanTitle) throw new Error("Post title must not be empty");
+    const item = normalizeShoppingItem(name, quantity);
     const result = await this.pool.query(
-      "INSERT INTO posts(title) VALUES ($1) RETURNING id",
-      [cleanTitle]
+      "INSERT INTO shopping_items(name, quantity) VALUES ($1, $2) RETURNING id",
+      [item.name, item.quantity]
     );
     return { id: result.rows[0].id, changes: 1 };
   }
@@ -53,7 +54,7 @@ class PostgresRepository {
   async toggle(id) {
     await this.ready;
     const result = await this.pool.query(
-      "UPDATE posts SET completed = NOT completed WHERE id = $1",
+      "UPDATE shopping_items SET purchased = NOT purchased WHERE id = $1",
       [id]
     );
     return { changes: result.rowCount };
@@ -61,7 +62,7 @@ class PostgresRepository {
 
   async remove(id) {
     await this.ready;
-    const result = await this.pool.query("DELETE FROM posts WHERE id = $1", [id]);
+    const result = await this.pool.query("DELETE FROM shopping_items WHERE id = $1", [id]);
     return { changes: result.rowCount };
   }
 
@@ -71,4 +72,4 @@ class PostgresRepository {
   }
 }
 
-module.exports = PostgresRepository;
+module.exports = PostgresShoppingRepository;

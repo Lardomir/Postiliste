@@ -2,6 +2,7 @@ const express = require("express");
 const nunjucks = require("nunjucks");
 const path = require("path");
 const createRepository = require("./repositoryFactory");
+const { normalizeShoppingItem } = require("./shoppingItem");
 
 function createApp(options = {}) {
   const app = express();
@@ -23,9 +24,9 @@ function createApp(options = {}) {
 
   app.get("/", async (req, res, next) => {
     try {
-      const posts = await repository.getAll();
+      const items = await repository.getAll();
       res.render("index.html", {
-        posts,
+        items,
         error: req.query.error || null,
       });
     } catch (error) {
@@ -33,35 +34,37 @@ function createApp(options = {}) {
     }
   });
 
-  app.post("/posts", async (req, res, next) => {
+  app.post("/items", async (req, res, next) => {
+    let item;
     try {
-      const title = String(req.body.title || "").trim();
-      if (!title) {
-        return res.redirect("/?error=" + encodeURIComponent("Please enter a title."));
-      }
+      item = normalizeShoppingItem(req.body.name, req.body.quantity);
+    } catch (error) {
+      return res.redirect("/?error=" + encodeURIComponent(error.message));
+    }
 
-      await repository.create(title);
+    try {
+      await repository.create(item.name, item.quantity);
       return res.redirect("/");
     } catch (error) {
       return next(error);
     }
   });
 
-  app.post("/posts/:id/toggle", async (req, res, next) => {
+  app.post("/items/:id/toggle", async (req, res, next) => {
     try {
       await repository.toggle(Number(req.params.id));
-      res.redirect("/");
+      return res.redirect("/");
     } catch (error) {
-      next(error);
+      return next(error);
     }
   });
 
-  app.post("/posts/:id/delete", async (req, res, next) => {
+  app.post("/items/:id/delete", async (req, res, next) => {
     try {
       await repository.remove(Number(req.params.id));
-      res.redirect("/");
+      return res.redirect("/");
     } catch (error) {
-      next(error);
+      return next(error);
     }
   });
 

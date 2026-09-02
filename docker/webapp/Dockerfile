@@ -5,7 +5,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm install --omit=dev
 
-COPY --chown=node:node app.js server.js postRepository.js postgresRepository.js repositoryFactory.js library.js ./
+COPY --chown=node:node app.js server.js shoppingItem.js shoppingRepository.js postgresShoppingRepository.js repositoryFactory.js ./
 COPY --chown=node:node views ./views
 RUN mkdir -p /app/data && chown -R node:node /app/data
 
