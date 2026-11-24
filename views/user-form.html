@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+{% block title %}{{ heading }} · Poschtilischte{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div><a href="/admin/users" class="back-link">← Benutzerverwaltung</a><h1>{{ heading }}</h1></div>
+</div>
+<form class="card form-card form-stack" method="post" action="{{ action }}">
+  <input type="hidden" name="_csrf" value="{{ csrf }}">
+  <label>Benutzername <span class="required">*</span>
+    <input name="username" required maxlength="60" value="{{ user.username or '' }}" autocomplete="off">
+  </label>
+  <label>E-Mail für Benachrichtigungen <span class="required">*</span>
+    <input name="email" type="email" required maxlength="254" value="{{ user.email or '' }}">
+  </label>
+  <label>Rolle <span class="required">*</span>
+    <select name="role">
+      <option value="USER" {% if user.role != "ADMIN" %}selected{% endif %}>Benutzer</option>
+      <option value="ADMIN" {% if user.role == "ADMIN" %}selected{% endif %}>Admin</option>
+    </select>
+  </label>
+  <label>Passwort {% if not user.id %}<span class="required">*</span>{% else %}<span class="muted">(leer lassen, um beizubehalten)</span>{% endif %}
+    <input type="password" name="password" minlength="12" {% if not user.id %}required{% endif %} autocomplete="new-password">
+  </label>
+  <label>Passwort wiederholen
+    <input type="password" name="confirmPassword" minlength="12" {% if not user.id %}required{% endif %} autocomplete="new-password">
+  </label>
+  <div class="form-actions">
+    <button type="submit" class="button primary">Speichern</button>
+    <a href="/admin/users" class="button subtle">Abbrechen</a>
+  </div>
+</form>
+{% if user.id and user.id != me.id %}
+  <form action="/admin/users/{{ user.id }}/delete" method="post" class="danger-zone"
+        onsubmit="return confirm('Benutzer wirklich löschen?')">
+    <input type="hidden" name="_csrf" value="{{ csrf }}">
+    <button type="submit" class="button danger">Benutzer löschen</button>
+  </form>
+{% endif %}
+{% endblock %}

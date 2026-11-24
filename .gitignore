@@ -1,3 +1,8 @@
-/node_modules/
-.DS_Store
+node_modules/
+.idea/
+.env
+data/
+coverage/
 
+local-postgres-data/
+smoke-state.json

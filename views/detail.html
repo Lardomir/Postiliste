@@ -1,0 +1,70 @@
+{% extends "layout.html" %}
+{% block title %}{{ list.title }} · Poschtilischte{% endblock %}
+{% block content %}
+<div class="page-heading">
+  <div>
+    <a href="/" class="back-link">← Alle Einkaufslisten</a>
+    <h1>{{ list.title }}</h1>
+    <p class="muted">Verantwortlich: <strong>{{ list.responsible_name }}</strong>
+    {% if list.due_date %} · Bis: {{ list.due_date }}{% endif %}
+    · {% if list.completed %}Erledigt{% else %}Offen{% endif %}</p>
+  </div>
+  <a class="button secondary" href="/lists/{{ list.id }}/edit">Liste bearbeiten</a>
+</div>
+<section class="card members-section">
+  <div class="section-heading">
+    <h2>Zugewiesene Benutzer</h2>
+    <a href="/lists/{{ list.id }}/edit" class="text-link">Bearbeiten</a>
+  </div>
+  <div class="member-pills">
+    {% for user in members %}<span class="member-pill">{{ user.username }}</span>{% else %}
+      <span class="muted">Keine zusätzlichen Benutzer</span>
+    {% endfor %}
+  </div>
+</section>
+<section class="card items-section">
+  <div class="section-heading">
+    <div><h2>Artikel</h2><p class="muted">Hake die Waren direkt beim Einkaufen ab.</p></div>
+  </div>
+  <form action="/lists/{{ list.id }}/items" method="post" class="add-item-form">
+    <input type="hidden" name="_csrf" value="{{ csrf }}">
+    <label class="visually-hidden" for="item-name">Artikelname</label>
+    <input id="item-name" name="name" required maxlength="200" placeholder="Artikel, z. B. Brot">
+    <label class="visually-hidden" for="item-quantity">Menge</label>
+    <input id="item-quantity" name="quantity" maxlength="50" placeholder="Menge, z. B. 2 kg">
+    <button type="submit" class="button primary">+ Hinzufügen</button>
+  </form>
+  <ul class="items-list">
+    {% for item in items %}
+      <li class="item-row {% if item.purchased %}purchased{% endif %}">
+        <form action="/lists/{{ list.id }}/items/{{ item.id }}/toggle" method="post" class="check-form">
+          <input type="hidden" name="_csrf" value="{{ csrf }}">
+          <button type="submit" class="check-button" aria-label="{% if item.purchased %}{{ item.name }} wieder offen markieren{% else %}{{ item.name }} als eingekauft markieren{% endif %}">
+            {% if item.purchased %}✓{% endif %}
+          </button>
+        </form>
+        <form action="/lists/{{ list.id }}/items/{{ item.id }}/edit" method="post" class="item-edit-form">
+          <input type="hidden" name="_csrf" value="{{ csrf }}">
+          <label class="visually-hidden" for="quantity-{{ item.id }}">Menge</label>
+          <input id="quantity-{{ item.id }}" name="quantity" value="{{ item.quantity or '' }}" maxlength="50" placeholder="Menge">
+          <label class="visually-hidden" for="name-{{ item.id }}">Produktname</label>
+          <input id="name-{{ item.id }}" name="name" value="{{ item.name }}" required maxlength="200" placeholder="Produktname">
+          <button class="button secondary small" type="submit">Speichern</button>
+        </form>
+        <form action="/lists/{{ list.id }}/items/{{ item.id }}/delete" method="post">
+          <input type="hidden" name="_csrf" value="{{ csrf }}">
+          <button class="button subtle small danger-text" aria-label="{{ item.name }} entfernen" type="submit">Entfernen</button>
+        </form>
+      </li>
+    {% else %}
+      <li class="empty-items">Noch keine Artikel. Füge oben das erste Produkt hinzu.</li>
+    {% endfor %}
+  </ul>
+</section>
+<div class="danger-zone">
+  <form action="/lists/{{ list.id }}/delete" method="post" onsubmit="return confirm('Ganze Einkaufsliste inklusive Artikel löschen?')">
+    <input type="hidden" name="_csrf" value="{{ csrf }}">
+    <button type="submit" class="button danger">Ganze Liste löschen</button>
+  </form>
+</div>
+{% endblock %}

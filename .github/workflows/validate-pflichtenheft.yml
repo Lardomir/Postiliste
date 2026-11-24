@@ -1,0 +1,74 @@
+name: Validate full Pflichtenheft branch
+
+on:
+  push:
+    branches:
+      - feature/full-pflichtenheft-2026
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install dependencies and update lockfile
+        run: npm install
+      - name: Apply Prettier formatting
+        run: npm run format
+      - name: Commit formatted code and updated lockfile
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- . ':!.github/workflows/*'
+          if ! git diff --cached --quiet; then
+            HUSKY=0 git commit -m "chore: format files and refresh dependency lockfile"
+            git push
+          fi
+      - name: Lint, formatting and tests
+        run: npm run check
+
+  docker-smoke:
+    needs: validate
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure disposable credentials
+        run: |
+          printf 'POSTGRES_PASSWORD=CI_DB_Password_123\nADMIN_USERNAME=admin\nADMIN_PASSWORD=CI_Admin_Password_123\nSESSION_SECRET=ci-only-random-test-session-secret-12345\n' > .env
+      - name: Start production Compose stack
+        run: docker compose up --build -d
+      - name: Verify web and database startup
+        run: |
+          for i in {1..30}; do
+            if curl --fail --silent http://localhost:3000/health; then exit 0; fi
+            sleep 3
+          done
+          docker compose logs --tail=100
+          exit 1
+      - name: Check smtp4dev API
+        run: curl --fail --silent http://localhost:8025/api/messages
+      - name: Exercise login, users, lists and SMTP notifications
+        run: node scripts/smoke.js create
+      - name: Restart without deleting database volume
+        run: |
+          docker compose down
+          docker compose up -d
+          for i in {1..30}; do
+            if curl --fail --silent http://localhost:3000/health; then exit 0; fi
+            sleep 3
+          done
+          exit 1
+      - name: Verify database persistence
+        run: node scripts/smoke.js verify
+      - name: Show logs if startup failed
+        if: failure()
+        run: docker compose logs --tail=150
+      - name: Stop test services
+        if: always()
+        run: docker compose down
