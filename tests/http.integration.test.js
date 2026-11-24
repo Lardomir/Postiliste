@@ -153,31 +153,46 @@ describe("HTTP forms against a real SQLite test database", () => {
 
   test("notifies newly assigned and removed members", async () => {
     const guestId = await store.createUser(
-      "Gast", "gast@example.test", hashPassword("TestPasswort12345!"), "USER"
+      "Gast",
+      "gast@example.test",
+      hashPassword("TestPasswort12345!"),
+      "USER",
     );
     const id = await store.createList({
-      title: "Teilbare Liste", dueDate: null,
-      responsibleUserId: adminId, memberIds: [adminId],
+      title: "Teilbare Liste",
+      dueDate: null,
+      responsibleUserId: adminId,
+      memberIds: [adminId],
     });
     sendMail.mockClear();
     const addResponse = await send("/lists/" + id + "/edit", adminCookie, {
-      _csrf: adminCsrf, title: "Teilbare Liste",
-      responsibleUserId: String(adminId), memberIds: [String(adminId), String(guestId)],
+      _csrf: adminCsrf,
+      title: "Teilbare Liste",
+      responsibleUserId: String(adminId),
+      memberIds: [String(adminId), String(guestId)],
     });
     expect(addResponse.status).toBe(302);
-    expect(sendMail).toHaveBeenCalledWith(expect.objectContaining({
-      to: "gast@example.test",
-    }));
-    expect(await store.getList(id, { id: guestId, role: "USER" })).not.toBeNull();
+    expect(sendMail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: "gast@example.test",
+      }),
+    );
+    expect(
+      await store.getList(id, { id: guestId, role: "USER" }),
+    ).not.toBeNull();
     sendMail.mockClear();
     const removeResponse = await send("/lists/" + id + "/edit", adminCookie, {
-      _csrf: adminCsrf, title: "Teilbare Liste",
-      responsibleUserId: String(adminId), memberIds: String(adminId),
+      _csrf: adminCsrf,
+      title: "Teilbare Liste",
+      responsibleUserId: String(adminId),
+      memberIds: String(adminId),
     });
     expect(removeResponse.status).toBe(302);
-    expect(sendMail).toHaveBeenCalledWith(expect.objectContaining({
-      to: "gast@example.test",
-    }));
+    expect(sendMail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: "gast@example.test",
+      }),
+    );
     expect(await store.getList(id, { id: guestId, role: "USER" })).toBeNull();
   });
 
