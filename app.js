@@ -151,7 +151,7 @@ function createApp(options = {}) {
     } catch (error) { next(error); }
   });
 
-  app.post("/lists", csrf, async (req, res, next) => {
+  app.post("/lists", csrf, async (req, res, _next) => {
     try {
       const data = parseListForm(req.body, req.user.id);
       if (!await store.validUsers(data.memberIds)) throw new Error("Ungültige Benutzerzuweisung.");
@@ -182,7 +182,7 @@ function createApp(options = {}) {
     } catch (error) { next(error); }
   });
 
-  app.post("/lists/:id/edit", csrf, listAccess, async (req, res, next) => {
+  app.post("/lists/:id/edit", csrf, listAccess, async (req, res, _next) => {
     try {
       const oldMembers = await store.memberIds(req.list.id);
       const before = new Set(oldMembers.map((member) => member.user_id));
@@ -213,7 +213,7 @@ function createApp(options = {}) {
     } catch (error) { next(error); }
   });
 
-  app.post("/lists/:id/items", csrf, listAccess, async (req, res, next) => {
+  app.post("/lists/:id/items", csrf, listAccess, async (req, res, _next) => {
     try {
       await store.addItem(req.list.id,
         requiredText(req.body.name, "Produktname", 200),
@@ -250,7 +250,7 @@ function createApp(options = {}) {
   app.get("/admin/users/new", requireAdmin, (_req, res) =>
     res.render("user-form.html", { heading: "Benutzer erstellen", action: "/admin/users", user: {} }));
 
-  app.post("/admin/users", requireAdmin, csrf, async (req, res, next) => {
+  app.post("/admin/users", requireAdmin, csrf, async (req, res, _next) => {
     try {
       const name = username(req.body.username);
       const mail = email(req.body.email);
@@ -274,7 +274,7 @@ function createApp(options = {}) {
     } catch (error) { next(error); }
   });
 
-  app.post("/admin/users/:id", requireAdmin, csrf, async (req, res, next) => {
+  app.post("/admin/users/:id", requireAdmin, csrf, async (req, res, _next) => {
     try {
       const id = integerId(req.params.id);
       const user = await store.findUser(id);
@@ -296,7 +296,7 @@ function createApp(options = {}) {
     } catch (error) { redirectError(res, "/admin/users/" + req.params.id + "/edit", error); }
   });
 
-  app.post("/admin/users/:id/delete", requireAdmin, csrf, async (req, res, next) => {
+  app.post("/admin/users/:id/delete", requireAdmin, csrf, async (req, res, _next) => {
     try {
       const id = integerId(req.params.id);
       if (id === req.user.id) throw new Error("Eigenes Konto kann nicht gelöscht werden.");
