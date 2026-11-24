@@ -3,3 +3,6 @@ data/
 coverage/
 chinook.db
 package-lock.json
+
+# Nunjucks tags must not be rewritten by the HTML parser.
+views/*.html

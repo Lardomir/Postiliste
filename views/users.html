@@ -1,5 +1,6 @@
-{% extends "layout.html" %} {% block title %}Benutzerverwaltung ·
-Poschtilischte{% endblock %} {% block content %}
+{% extends "layout.html" %}
+{% block title %}Benutzerverwaltung · Poschtilischte{% endblock %}
+{% block content %}
 <div class="page-heading">
   <div>
     <p class="eyebrow">Administration</p>
@@ -9,42 +10,22 @@ Poschtilischte{% endblock %} {% block content %}
   <a href="/admin/users/new" class="button primary">+ Neuer Benutzer</a>
 </div>
 <div class="card table-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th>Benutzername</th>
-        <th>E-Mail</th>
-        <th>Rolle</th>
-        <th>Erstellt</th>
-        <th>Letzter Login</th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for user in users %}
+<table>
+  <thead><tr><th>Benutzername</th><th>E-Mail</th><th>Rolle</th><th>Erstellt</th><th>Letzter Login</th><th></th></tr></thead>
+  <tbody>
+    {% for user in users %}
       <tr>
         <td><strong>{{ user.username }}</strong></td>
         <td>{{ user.email or '—' }}</td>
         <td><span class="pill">{{ user.role }}</span></td>
         <td>{{ user.created_at | truncate(10, true, '') }}</td>
-        <td>
-          {{ user.last_login_at | truncate(10, true, '') if user.last_login_at
-          else '—' }}
-        </td>
-        <td>
-          <a
-            class="button secondary small"
-            href="/admin/users/{{ user.id }}/edit"
-            >Bearbeiten</a
-          >
-        </td>
+        <td>{{ user.last_login_at | truncate(10, true, '') if user.last_login_at else '—' }}</td>
+        <td><a class="button secondary small" href="/admin/users/{{ user.id }}/edit">Bearbeiten</a></td>
       </tr>
-      {% else %}
-      <tr>
-        <td colspan="6">Noch keine Benutzer vorhanden.</td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+    {% else %}
+      <tr><td colspan="6">Noch keine Benutzer vorhanden.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
 </div>
 {% endblock %}
