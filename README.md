@@ -58,19 +58,19 @@ npm run serve
 
 ## npm-Scripts
 
-| Script | Funktion | Wann? |
-| --- | --- | --- |
-| `npm start` | Server starten | Produktiv oder Testlauf |
-| `npm run serve` | Nodemon-Entwicklungsserver | Beim Programmieren |
-| `npm test` | Jest-Tests und SQLite-Integrationstests | Vor Pull Requests / in CI |
-| `npm run lint` | ESLint-Prüfung | Laufend und vor Commits |
-| `npm run format` | Prettier formatiert Dateien | Nach Änderungen |
-| `npm run format:check` | Formatierung prüfen | Vor Commits / in CI |
-| `npm run check` | Lint, Formatprüfung, Tests | Vor Commit / im CI |
-| `npm run dev-setup` | npm install und Docker-Build | Nach dem ersten Checkout |
-| `npm run docker:build` | Produktionsimage bauen | Vor einem Release |
-| `npm run docker:up` | Compose-Umgebung starten | Test/Deployment |
-| `npm run docker:test` | CI-Testimage bauen und darin Tests starten | CI lokal nachbilden |
+| Script                 | Funktion                                   | Wann?                     |
+| ---------------------- | ------------------------------------------ | ------------------------- |
+| `npm start`            | Server starten                             | Produktiv oder Testlauf   |
+| `npm run serve`        | Nodemon-Entwicklungsserver                 | Beim Programmieren        |
+| `npm test`             | Jest-Tests und SQLite-Integrationstests    | Vor Pull Requests / in CI |
+| `npm run lint`         | ESLint-Prüfung                             | Laufend und vor Commits   |
+| `npm run format`       | Prettier formatiert Dateien                | Nach Änderungen           |
+| `npm run format:check` | Formatierung prüfen                        | Vor Commits / in CI       |
+| `npm run check`        | Lint, Formatprüfung, Tests                 | Vor Commit / im CI        |
+| `npm run dev-setup`    | npm install und Docker-Build               | Nach dem ersten Checkout  |
+| `npm run docker:build` | Produktionsimage bauen                     | Vor einem Release         |
+| `npm run docker:up`    | Compose-Umgebung starten                   | Test/Deployment           |
+| `npm run docker:test`  | CI-Testimage bauen und darin Tests starten | CI lokal nachbilden       |
 
 `package.json` beschreibt die direkten Dependencies, `package-lock.json` die aufgelösten Versionen. Nach Änderungen der Dependencies `npm install` ausführen, Lockfile mitcommitten. **Vor dem finalen Release muss das bestehende Lockfile aktualisiert und `npm run format && npm run check` ausgeführt werden.**
 
@@ -126,6 +126,7 @@ Ein neuer Benutzer braucht eine E-Mail-Adresse, damit Benachrichtigungen ankomme
 Die Datenbank für Tests wird temporär angelegt und am Ende aufgeräumt; keine produktiven Credentials nötig.
 
 Manuell prüfen:
+
 1. Admin meldet sich an und erstellt Benutzer.
 2. Benutzer A sieht Liste X, Benutzer B ohne Zuweisung nicht (auch per Direkt-URL).
 3. Admin sieht jede Liste und Benutzerverwaltung.
@@ -147,6 +148,7 @@ docker compose up --build -d
 Unter **http://localhost:8080** Jenkins initialisieren. Einen **Pipeline from SCM** Job anlegen, das GitHub-Repository mit Zugangstoken hinterlegen und den Pfad `Jenkinsfile` setzen. Jenkins benötigt funktionierenden Docker-Zugriff, inklusive Docker-Socket-Zugriff für den lokalen Schul-Server.
 
 Pipeline:
+
 1. Checkout aus GitHub (SCM)
 2. Eigenes Docker-**Testimage** bauen (mit Dev-Dependencies)
 3. `npm run check` **im Testcontainer** ausführen, inklusive echter SQLite-Integrationstests
@@ -177,19 +179,19 @@ Für die vollständige Demo wird die Docker-Compose-Datei mit der Datenbank-Konf
 
 ## Environment
 
-| Variable | Zweck |
-| --- | --- |
-| `PORT` | HTTP-Port, Standard 3000 |
-| `DATABASE_URL` | PostgreSQL-Verbindungsstring; fehlt diese Variable, wird SQLite benutzt |
-| `DB_PATH` | Dateipfad der SQLite-DB bei lokaler Entwicklung |
-| `POSTGRES_PASSWORD` | Passwort für den PostgreSQL-Container |
-| `ADMIN_USERNAME` | Benutzername des initialen Admins |
-| `ADMIN_PASSWORD` | Passwort des initialen Admins, min. 12 Zeichen |
-| `ADMIN_EMAIL` | Optionale E-Mail des initialen Admins |
-| `SESSION_SECRET` | Zufälliger Server-Schlüssel, min. 32 Zeichen |
-| `COOKIE_SECURE` | Bei HTTPS auf `true` setzen |
-| `SMTP_HOST`, `SMTP_PORT` | Nur lokaler Dummy-SMTP-Server |
-| `MAIL_FROM` | Absenderadresse für Testmails |
-| `SMTP4DEV_WEB_PORT` | Externer smtp4dev-Webport, Standard 8025 |
+| Variable                 | Zweck                                                                   |
+| ------------------------ | ----------------------------------------------------------------------- |
+| `PORT`                   | HTTP-Port, Standard 3000                                                |
+| `DATABASE_URL`           | PostgreSQL-Verbindungsstring; fehlt diese Variable, wird SQLite benutzt |
+| `DB_PATH`                | Dateipfad der SQLite-DB bei lokaler Entwicklung                         |
+| `POSTGRES_PASSWORD`      | Passwort für den PostgreSQL-Container                                   |
+| `ADMIN_USERNAME`         | Benutzername des initialen Admins                                       |
+| `ADMIN_PASSWORD`         | Passwort des initialen Admins, min. 12 Zeichen                          |
+| `ADMIN_EMAIL`            | Optionale E-Mail des initialen Admins                                   |
+| `SESSION_SECRET`         | Zufälliger Server-Schlüssel, min. 32 Zeichen                            |
+| `COOKIE_SECURE`          | Bei HTTPS auf `true` setzen                                             |
+| `SMTP_HOST`, `SMTP_PORT` | Nur lokaler Dummy-SMTP-Server                                           |
+| `MAIL_FROM`              | Absenderadresse für Testmails                                           |
+| `SMTP4DEV_WEB_PORT`      | Externer smtp4dev-Webport, Standard 8025                                |
 
 Keine echten Geheimnisse im Git-Repository speichern. Die Beispielwerte in `.env.example` **müssen ersetzt werden**.

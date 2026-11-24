@@ -9,13 +9,15 @@ async function main() {
   const { total } = await store.userCount();
   if (Number(total) === 0) {
     if (!process.env.ADMIN_USERNAME || !process.env.ADMIN_PASSWORD) {
-      throw new Error("Erststart: ADMIN_USERNAME und ADMIN_PASSWORD setzen (mind. 12 Zeichen).");
+      throw new Error(
+        "Erststart: ADMIN_USERNAME und ADMIN_PASSWORD setzen (mind. 12 Zeichen).",
+      );
     }
     await store.createUser(
       username(process.env.ADMIN_USERNAME),
       email(process.env.ADMIN_EMAIL),
       hashPassword(process.env.ADMIN_PASSWORD),
-      "ADMIN"
+      "ADMIN",
     );
     console.log("Initialer Admin-Benutzer erstellt.");
   }
@@ -40,9 +42,10 @@ async function main() {
   process.on("SIGTERM", shutdown);
 }
 
-if (require.main === module) main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+if (require.main === module)
+  main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
 
 module.exports = { main };

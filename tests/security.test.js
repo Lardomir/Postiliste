@@ -1,5 +1,11 @@
 const {
-  hashPassword, verifyPassword, newSessionToken, tokenHash, csrfToken, secureEquals, readCookie,
+  hashPassword,
+  verifyPassword,
+  newSessionToken,
+  tokenHash,
+  csrfToken,
+  secureEquals,
+  readCookie,
 } = require("../lib/security");
 
 describe("Authentication security", () => {
@@ -20,7 +26,9 @@ describe("Authentication security", () => {
     const token = newSessionToken();
     expect(token).toMatch(/^[0-9a-f]{64}$/);
     expect(tokenHash(token)).not.toBe(token);
-    expect(csrfToken(token, "secret")).not.toBe(csrfToken("different", "secret"));
+    expect(csrfToken(token, "secret")).not.toBe(
+      csrfToken("different", "secret"),
+    );
     expect(secureEquals("abc", "abc")).toBe(true);
     expect(secureEquals("abc", "abcd")).toBe(false);
   });

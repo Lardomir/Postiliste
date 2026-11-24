@@ -1,42 +1,52 @@
-{% extends "layout.html" %}
-{% block title %}Einkaufslisten · Poschtilischte{% endblock %}
-{% block content %}
+{% extends "layout.html" %} {% block title %}Einkaufslisten · Poschtilischte{%
+endblock %} {% block content %}
 <div class="page-heading">
   <div>
     <p class="eyebrow">Deine Übersicht</p>
     <h1>Einkaufslisten</h1>
-    <p class="muted">Angemeldet als <strong>{{ me.username }}</strong> · Hier siehst du alle Listen, für die du verantwortlich oder freigeschaltet bist.</p>
+    <p class="muted">
+      Angemeldet als <strong>{{ me.username }}</strong> · Hier siehst du alle
+      Listen, für die du verantwortlich oder freigeschaltet bist.
+    </p>
   </div>
   <a class="button primary" href="/lists/new">+ Neue Liste</a>
 </div>
 {% if lists.length %}
-  <div class="list-grid">
-    {% for list in lists %}
-      <article class="card shopping-card {% if list.completed %}is-completed{% endif %}">
-        <div class="card-head">
-          <a href="/lists/{{ list.id }}" class="list-title">{{ list.title }}</a>
-          <span class="pill {% if list.completed %}done{% endif %}">{% if list.completed %}Erledigt{% else %}Offen{% endif %}</span>
-        </div>
-        <div class="meta">
-          <span><strong>Verantwortlich:</strong> {{ list.responsible_name }}</span>
-          {% if list.due_date %}<span><strong>Bis:</strong> {{ list.due_date }}</span>{% endif %}
-        </div>
-        <div class="card-actions">
-          <a href="/lists/{{ list.id }}" class="button secondary">Liste öffnen</a>
-          <form action="/lists/{{ list.id }}/toggle" method="post">
-            <input type="hidden" name="_csrf" value="{{ csrf }}">
-            <button class="button subtle" type="submit">{% if list.completed %}Wieder öffnen{% else %}Als erledigt markieren{% endif %}</button>
-          </form>
-        </div>
-      </article>
-    {% endfor %}
-  </div>
+<div class="list-grid">
+  {% for list in lists %}
+  <article
+    class="card shopping-card {% if list.completed %}is-completed{% endif %}"
+  >
+    <div class="card-head">
+      <a href="/lists/{{ list.id }}" class="list-title">{{ list.title }}</a>
+      <span class="pill {% if list.completed %}done{% endif %}"
+        >{% if list.completed %}Erledigt{% else %}Offen{% endif %}</span
+      >
+    </div>
+    <div class="meta">
+      <span><strong>Verantwortlich:</strong> {{ list.responsible_name }}</span>
+      {% if list.due_date %}<span
+        ><strong>Bis:</strong> {{ list.due_date }}</span
+      >{% endif %}
+    </div>
+    <div class="card-actions">
+      <a href="/lists/{{ list.id }}" class="button secondary">Liste öffnen</a>
+      <form action="/lists/{{ list.id }}/toggle" method="post">
+        <input type="hidden" name="_csrf" value="{{ csrf }}" />
+        <button class="button subtle" type="submit">
+          {% if list.completed %}Wieder öffnen{% else %}Als erledigt markieren{%
+          endif %}
+        </button>
+      </form>
+    </div>
+  </article>
+  {% endfor %}
+</div>
 {% else %}
-  <section class="empty card">
-    <div class="empty-icon" aria-hidden="true">+</div>
-    <h2>Noch keine Einkaufslisten</h2>
-    <p class="muted">Erstelle deine erste Liste und teile sie mit anderen.</p>
-    <a class="button primary" href="/lists/new">Einkaufsliste erstellen</a>
-  </section>
-{% endif %}
-{% endblock %}
+<section class="empty card">
+  <div class="empty-icon" aria-hidden="true">+</div>
+  <h2>Noch keine Einkaufslisten</h2>
+  <p class="muted">Erstelle deine erste Liste und teile sie mit anderen.</p>
+  <a class="button primary" href="/lists/new">Einkaufsliste erstellen</a>
+</section>
+{% endif %} {% endblock %}

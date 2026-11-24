@@ -1,6 +1,7 @@
 # Abnahmecheckliste – M324 Poschtilischte
 
 ## Funktionen
+
 - [ ] Login, falsche Zugangsdaten, Logout
 - [ ] Admin kann Benutzer erstellen, bearbeiten, löschen
 - [ ] User darf /admin/users auch als direkte URL nicht öffnen
@@ -13,6 +14,7 @@
 - [ ] Zuweisungs-/Änderungsnachrichten in smtp4dev
 
 ## DevOps / Kompetenznachweis
+
 - [ ] GitHub Projektboard: Status, Priorität, Deadline, Verantwortliche
 - [ ] Granulare Issues mit DoD und passenden Commits
 - [ ] ESLint, Prettier, Husky und npm-Scripts laufen

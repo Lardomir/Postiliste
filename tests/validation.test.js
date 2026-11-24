@@ -1,5 +1,11 @@
 const {
-  requiredText, optionalText, optionalDate, integerId, memberIds, username, email,
+  requiredText,
+  optionalText,
+  optionalDate,
+  integerId,
+  memberIds,
+  username,
+  email,
 } = require("../lib/validation");
 
 describe("Input validation", () => {

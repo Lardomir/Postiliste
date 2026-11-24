@@ -1,39 +1,84 @@
-{% extends "layout.html" %}
-{% block title %}{{ heading }} · Poschtilischte{% endblock %}
-{% block content %}
+{% extends "layout.html" %} {% block title %}{{ heading }} · Poschtilischte{%
+endblock %} {% block content %}
 <div class="page-heading">
   <div>
-    <a href="{% if list.id %}/lists/{{ list.id }}{% else %}/{% endif %}" class="back-link">← Zurück</a>
+    <a
+      href="{% if list.id %}/lists/{{ list.id }}{% else %}/{% endif %}"
+      class="back-link"
+      >← Zurück</a
+    >
     <h1>{{ heading }}</h1>
   </div>
 </div>
 <form action="{{ action }}" method="post" class="card form-card form-stack">
-  <input type="hidden" name="_csrf" value="{{ csrf }}">
-  <label>Listenname <span class="required">*</span>
-    <input name="title" value="{{ list.title or '' }}" required maxlength="200" placeholder="z. B. Wocheneinkauf">
+  <input type="hidden" name="_csrf" value="{{ csrf }}" />
+  <label
+    >Listenname <span class="required">*</span>
+    <input
+      name="title"
+      value="{{ list.title or '' }}"
+      required
+      maxlength="200"
+      placeholder="z. B. Wocheneinkauf"
+    />
   </label>
-  <label>Zu erledigen bis (optional)
-    <input type="date" name="dueDate" value="{{ list.due_date or '' }}">
+  <label
+    >Zu erledigen bis (optional)
+    <input type="date" name="dueDate" value="{{ list.due_date or '' }}" />
   </label>
-  <label>Verantwortliche Person <span class="required">*</span>
+  <label
+    >Verantwortliche Person <span class="required">*</span>
     <select name="responsibleUserId" required>
       {% for user in users %}
-        <option value="{{ user.id }}" {% if list.responsible_user_id == user.id %}selected{% endif %}>{{ user.username }}</option>
+      <option
+        value="{{ user.id }}"
+        {%
+        if
+        list.responsible_user_id=""
+        ="user.id"
+        %}selected{%
+        endif
+        %}
+      >
+        {{ user.username }}
+      </option>
       {% endfor %}
     </select>
   </label>
   <fieldset>
     <legend>Sichtbar / bearbeitbar für</legend>
-    <p class="muted field-hint">Du kannst mehrere Benutzer auswählen. Die verantwortliche Person erhält automatisch Zugriff.</p>
+    <p class="muted field-hint">
+      Du kannst mehrere Benutzer auswählen. Die verantwortliche Person erhält
+      automatisch Zugriff.
+    </p>
     <div class="member-grid">
       {% for user in users %}
-        <label class="choice"><input type="checkbox" name="memberIds" value="{{ user.id }}" {% if user.id in memberIds %}checked{% endif %}> {{ user.username }}</label>
+      <label class="choice"
+        ><input
+          type="checkbox"
+          name="memberIds"
+          value="{{ user.id }}"
+          {%
+          if
+          user.id
+          in
+          memberIds
+          %}checked{%
+          endif
+          %}
+        />
+        {{ user.username }}</label
+      >
       {% endfor %}
     </div>
   </fieldset>
   <div class="form-actions">
     <button type="submit" class="button primary">Speichern</button>
-    <a href="{% if list.id %}/lists/{{ list.id }}{% else %}/{% endif %}" class="button subtle">Abbrechen</a>
+    <a
+      href="{% if list.id %}/lists/{{ list.id }}{% else %}/{% endif %}"
+      class="button subtle"
+      >Abbrechen</a
+    >
   </div>
 </form>
 {% endblock %}
