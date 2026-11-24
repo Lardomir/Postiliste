@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>{% block title %}Poschtilischte{% endblock %}</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/">Poschtilischte<span class="brand-dot">.</span></a>
+    {% if me %}
+      <nav aria-label="Hauptnavigation">
+        <span class="user-chip">{{ me.username }} {% if me.role == "ADMIN" %}<small>Admin</small>{% endif %}</span>
+        <a href="/">Einkaufslisten</a>
+        {% if isAdmin %}<a href="/admin/users">Benutzer</a>{% endif %}
+        <form action="/logout" method="post" class="inline">
+          <input type="hidden" name="_csrf" value="{{ csrf }}">
+          <button type="submit" class="button subtle small">Abmelden</button>
+        </form>
+      </nav>
+    {% endif %}
+  </header>
+  <main class="container">
+    {% if error %}<p role="alert" class="alert">{{ error }}</p>{% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer">M324 · BZT Frauenfeld · Poschtilischte</footer>
+</body>
+</html>

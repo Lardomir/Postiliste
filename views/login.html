@@ -1,0 +1,18 @@
+{% extends "layout.html" %}
+{% block title %}Anmelden · Poschtilischte{% endblock %}
+{% block content %}
+<section class="auth-panel card">
+  <p class="eyebrow">Willkommen zurück</p>
+  <h1>Bei Poschtilischte anmelden</h1>
+  <p class="muted">Deine Einkaufslisten für den nächsten Einkauf.</p>
+  <form action="/login" method="post" class="form-stack">
+    <label>Benutzername
+      <input name="username" autocomplete="username" required autofocus maxlength="60">
+    </label>
+    <label>Passwort
+      <input type="password" name="password" autocomplete="current-password" required>
+    </label>
+    <button class="button primary" type="submit">Anmelden</button>
+  </form>
+</section>
+{% endblock %}
