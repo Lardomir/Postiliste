@@ -190,7 +190,7 @@ function createApp(options = {}) {
       if (!await store.validUsers(data.memberIds)) throw new Error("Ungültige Benutzerzuweisung.");
       await store.updateList(req.list.id, data);
       await notifyUsers(data.memberIds.filter((id) => !before.has(id)), req.user, data.title, "dich zur Liste hinzugefügt");
-      await notifyUsers(data.memberIds, req.user, data.title, "die Liste aktualisiert");
+      await notifyUsers(data.memberIds.filter((id) => before.has(id)), req.user, data.title, "die Liste aktualisiert");
       res.redirect("/lists/" + req.list.id);
     } catch (error) { redirectError(res, "/lists/" + req.list.id + "/edit", error); }
   });
@@ -227,6 +227,8 @@ function createApp(options = {}) {
   app.post("/lists/:id/items/:itemId/toggle", csrf, listAccess, async (req, res, next) => {
     try {
       await store.toggleItem(req.list.id, integerId(req.params.itemId));
+      await notifyUsers((await store.memberIds(req.list.id)).map((m) => m.user_id),
+        req.user, req.list.title, "einen Artikel als gekauft/offen markiert");
       res.redirect("/lists/" + req.list.id);
     } catch (error) { next(error); }
   });
