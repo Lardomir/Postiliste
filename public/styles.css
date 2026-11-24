@@ -500,3 +500,5 @@ tbody tr:last-child td {
     font-size: 1.1rem;
   }
 }
+
+.item-edit-form{flex:1;min-width:0;display:grid;grid-template-columns:minmax(75px,100px) minmax(80px,1fr) auto;gap:8px;align-items:center}.item-edit-form input{font:inherit;width:100%;min-width:0;padding:9px 10px;border:1px solid #d7e0e3;border-radius:8px}.item-row.purchased .item-edit-form input{text-decoration:line-through;color:#9ca5ae}@media(max-width:680px){.item-edit-form{grid-template-columns:1fr 2fr;gap:6px}.item-edit-form button{grid-column:1/-1}}

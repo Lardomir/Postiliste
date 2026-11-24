@@ -50,6 +50,7 @@ describe("Multi-user real SQLite integration", () => {
     });
     const product = await store.addItem(id, "Milch", "2 l");
     await store.toggleItem(id, product);
+    await store.updateItem(id, product, "Vollmilch", "3 l");
 
     await store.close();
     store = new Store({ dbPath: filename });
@@ -71,8 +72,8 @@ describe("Multi-user real SQLite integration", () => {
     ).not.toBeNull();
     const products = await store.items(id);
     expect(products[0]).toMatchObject({
-      name: "Milch",
-      quantity: "2 l",
+      name: "Vollmilch",
+      quantity: "3 l",
       purchased: 1,
     });
     await store.toggleList(id);

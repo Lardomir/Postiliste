@@ -351,6 +351,27 @@ function createApp(options = {}) {
     }
   });
 
+  app.post("/lists/:id/items/:itemId/edit", csrf, listAccess, async (req, res, _next) => {
+    try {
+      const result = await store.updateItem(
+        req.list.id,
+        integerId(req.params.itemId),
+        requiredText(req.body.name, "Produktname", 200),
+        optionalText(req.body.quantity, 50),
+      );
+      if (!result.changes) return res.status(404).send("Artikel nicht gefunden.");
+      await notifyUsers(
+        (await store.memberIds(req.list.id)).map((m) => m.user_id),
+        req.user,
+        req.list.title,
+        "einen Artikel bearbeitet",
+      );
+      res.redirect("/lists/" + req.list.id);
+    } catch (error) {
+      redirectError(res, "/lists/" + req.list.id, error);
+    }
+  });
+
   app.post(
     "/lists/:id/items/:itemId/toggle",
     csrf,

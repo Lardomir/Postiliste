@@ -116,10 +116,15 @@ describe("HTTP forms against a real SQLite test database", () => {
       quantity: "2",
     });
     expect(product.status).toBe(302);
+    const itemId = (await store.items(Number(location.split("/").pop())))[0].id;
+    const edited = await send(location + "/items/" + itemId + "/edit", userCookie, {
+      _csrf: userCsrf, name: "Vollkornbrot", quantity: "3",
+    });
+    expect(edited.status).toBe(302);
     const page = await fetch(root + location, {
       headers: { cookie: userCookie },
     });
-    expect(await page.text()).toContain("Brot");
+    expect(await page.text()).toContain("Vollkornbrot");
   });
 
   test("allows Admin to see all lists", async () => {

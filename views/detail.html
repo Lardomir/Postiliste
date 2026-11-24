@@ -43,10 +43,14 @@
             {% if item.purchased %}✓{% endif %}
           </button>
         </form>
-        <div class="item-content">
-          <span class="item-name">{{ item.name }}</span>
-          {% if item.quantity %}<span class="item-qty">{{ item.quantity }}</span>{% endif %}
-        </div>
+        <form action="/lists/{{ list.id }}/items/{{ item.id }}/edit" method="post" class="item-edit-form">
+          <input type="hidden" name="_csrf" value="{{ csrf }}">
+          <label class="visually-hidden" for="quantity-{{ item.id }}">Menge</label>
+          <input id="quantity-{{ item.id }}" name="quantity" value="{{ item.quantity or '' }}" maxlength="50" placeholder="Menge">
+          <label class="visually-hidden" for="name-{{ item.id }}">Produktname</label>
+          <input id="name-{{ item.id }}" name="name" value="{{ item.name }}" required maxlength="200" placeholder="Produktname">
+          <button class="button secondary small" type="submit">Speichern</button>
+        </form>
         <form action="/lists/{{ list.id }}/items/{{ item.id }}/delete" method="post">
           <input type="hidden" name="_csrf" value="{{ csrf }}">
           <button class="button subtle small danger-text" aria-label="{{ item.name }} entfernen" type="submit">Entfernen</button>
