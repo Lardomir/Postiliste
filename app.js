@@ -221,6 +221,7 @@ function createApp(options = {}) {
         users: await store.users(),
         list: { responsible_user_id: req.user.id },
         memberIds: [req.user.id],
+        error: req.query.error,
       });
     } catch (error) {
       next(error);
@@ -281,14 +282,23 @@ function createApp(options = {}) {
       if (!(await store.validUsers(data.memberIds)))
         throw new Error("Ungültige Benutzerzuweisung.");
       await store.updateList(req.list.id, data);
+      const removedIds = [...before].filter((id) => !data.memberIds.includes(id));
+      const newIds = data.memberIds.filter((id) => !before.has(id));
+      const unchangedIds = data.memberIds.filter((id) => before.has(id));
       await notifyUsers(
-        data.memberIds.filter((id) => !before.has(id)),
+        newIds,
         req.user,
         data.title,
         "dich zur Liste hinzugefügt",
       );
       await notifyUsers(
-        data.memberIds.filter((id) => before.has(id)),
+        removedIds,
+        req.user,
+        data.title,
+        "deine Zuweisung zur Liste entfernt",
+      );
+      await notifyUsers(
+        unchangedIds,
         req.user,
         data.title,
         "die Liste aktualisiert",
@@ -434,6 +444,7 @@ function createApp(options = {}) {
       heading: "Benutzer erstellen",
       action: "/admin/users",
       user: {},
+      error: _req.query.error,
     }),
   );
 
