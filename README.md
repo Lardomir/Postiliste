@@ -1,259 +1,195 @@
-# Postiliste – M324 DevOps project
+# Poschtilischte – M324 DevOps-Prozesse
 
-Postiliste is a small persistent **shopping list (Einkaufsliste)** built with ExpressJS for ICT module M324. Users can add products with an optional quantity, mark products as purchased/open again, and remove them from the list.
+Web-App für mehrere Einkaufslisten in einem Haushalt. Umgesetzt mit **Node.js / Express, Nunjucks, PostgreSQL (Docker)**, SQLite für lokale Entwicklung und Tests, und Jenkins CI/CD. Die Gestaltung orientiert sich an den drei Screen-Mocks des Pflichtenhefts.
 
-The project demonstrates project management with GitHub, automated tests, linting/formatting, Git hooks, Docker, PostgreSQL and a Jenkins CI/CD pipeline.
+## Funktionalität
 
-## Product quick guide
+- Anmeldung/Abmeldung mit gehashten Passwörtern, serverseitigen Sessions und CSRF-Schutz
+- **Admin**: alle Listen sichtbar/bearbeitbar, Benutzerverwaltung
+- **User**: nur Listen, für die er verantwortlich oder als Mitglied eingetragen ist
+- Beliebig viele Einkaufslisten mit Titel, optionalem Fälligkeitsdatum, verantwortlicher Person und Erledigt-Status
+- Mehrere zugewiesene Benutzer pro Liste; Berechtigungen gelten auch direkt über URLs/HTTP-Requests
+- Artikel pro Liste: Name, freie Menge, gekauft/offen-Checkbox, löschen
+- Mobile-taugliche Seiten: Übersicht, Listen-Detail, Benutzerverwaltung
+- E-Mail-Benachrichtigungen bei Zuweisungen und Änderungen, lokal prüfbar mit smtp4dev
+- Automatische Datenbank-Migrationen, persistent gespeicherte Daten
 
-1. Open `http://localhost:3000`.
-2. Enter a product, for example `Milch`.
-3. Optionally enter a quantity, for example `2 l`.
-4. Select **Hinzufügen**.
-5. Select **Gekauft** when the product has been bought.
-6. Use **Wieder offen** to put it back on the active shopping list.
-7. Use **Entfernen** to delete it.
-8. `GET /health` returns a health response for Docker/CI checks.
+## Schnellstart für Tester (Docker)
 
-## Architecture
+**Voraussetzung:** Docker Desktop oder Docker Engine mit Compose, freie Ports 3000 und 8025.
 
-```text
-Browser
-  |
-  | HTTP forms / HTML
-  v
-Express app (app.js)
-  |
-  | shopping-item validation
-  v
-Shopping repository
-  |                     |
-  | local/test           | Docker/production
-  v                     v
-SQLite              PostgreSQL container
+1. Projekt klonen und in den Ordner wechseln.
+2. `.env.example` nach `.env` kopieren.
+3. In `.env` **POSTGRES_PASSWORD**, **ADMIN_PASSWORD** (mindestens 12 Zeichen) und **SESSION_SECRET** (mindestens 32 zufällige Zeichen) individuell setzen.
+4. `docker compose up --build -d` ausführen.
+5. Web-App unter **http://localhost:3000** öffnen.
+6. Mit `ADMIN_USERNAME` und `ADMIN_PASSWORD` anmelden (initialer Admin wird beim ersten Start erstellt).
+7. Über **Benutzer** weitere Accounts mit E-Mail-Adresse anlegen.
+8. Einkaufslisten erstellen, einer verantwortlichen Person zuweisen, mehrere Nutzer freischalten und Artikel abhaken.
+9. Test-Mails unter **http://localhost:8025** ansehen.
+
+Sobald bereits Benutzer in der DB bestehen, erzeugt der Start **keinen neuen Admin**; ein geänderter `ADMIN_PASSWORD`-Wert setzt das Passwort eines vorhandenen Admins nicht zurück.
+
+Zum Prüfen der Persistenz: Liste erstellen, dann `docker compose down` und `docker compose up -d`. Die Liste bleibt im PostgreSQL-Volume bestehen. **Achtung:** `docker compose down -v` entfernt die Daten dauerhaft.
+
+Mit `docker compose logs -f postiliste` lassen sich Serverlogs einsehen.
+
+## Setup für Entwickler
+
+Benötigt: **Node.js 24**, npm, Git; für CI/Docker zusätzlich Docker und Jenkins.
+
+```sh
+git clone https://github.com/Lardomir/Postiliste.git
+cd Postiliste
+npm install
 ```
 
-- `app.js` contains the HTTP routes.
-- `views/index.html` renders the shopping list with Nunjucks.
-- `shoppingItem.js` validates and normalizes product name and quantity.
-- `shoppingRepository.js` provides the SQLite implementation for development/integration tests.
-- `postgresShoppingRepository.js` provides the PostgreSQL implementation used by Docker production.
-- `repositoryFactory.js` selects PostgreSQL when `DATABASE_URL` exists; otherwise it uses SQLite.
-- `server.js` starts the HTTP server.
-- Database migrations run automatically during startup.
+Lokale SQLite-Entwicklung ohne Docker:
 
-The main database entity is `shopping_items` with product name, optional quantity, purchased state and creation time.
-
-## Requirements
-
-- Node.js 24 (see `.nvmrc`)
-- npm
-- Git
-- Docker Desktop / Docker Engine for container workflows
-
-## Developer setup
-
-After cloning the repository:
-
-```bash
-npm install
+```sh
+# In .env bzw. als lokale Umgebungsvariablen setzen:
+# ADMIN_USERNAME=admin
+# ADMIN_PASSWORD=<mindestens 12 Zeichen>
+# SESSION_SECRET=<mindestens 32 Zeichen>
 npm run serve
 ```
 
-The development server runs at `http://localhost:3000` and stores data in local SQLite by default.
+**Hinweis:** Node lädt `.env` nicht automatisch in jeder Konfiguration. In Node 24 kann man für den lokalen Start `node --env-file=.env server.js` verwenden. `DATABASE_URL` für SQLite weglassen oder leer setzen; Standard-DB: `data/postiliste.db`. Eine laufende PostgreSQL-Instanz wird über `DATABASE_URL` gewählt.
 
-For the prepared development setup:
+## npm-Scripts
 
-```bash
-npm run dev-setup
-```
-
-This installs the dependencies and builds the Docker environment.
-
-## npm commands
-
-| Command | Purpose | When to use it |
+| Script | Funktion | Wann? |
 | --- | --- | --- |
-| `npm start` | Start the Node server | Production/container runtime |
-| `npm run serve` | Start with Nodemon | During development |
-| `npm test` | Run Jest unit + integration tests | Before commits and in CI |
-| `npm run lint` | Validate JavaScript with ESLint | While coding / before commits |
-| `npm run format` | Format files with Prettier | After editing |
-| `npm run format:check` | Check formatting without changing files | Before commits and in CI |
-| `npm run check` | Run lint, formatting check and tests | Main local quality gate |
-| `npm run dev-setup` | Install dependencies and build Docker | After a fresh checkout |
-| `npm run docker:build` | Build `postiliste:local` | Before a manual container release |
-| `npm run docker:up` | Start the Compose production environment | Production-like testing |
+| `npm start` | Server starten | Produktiv oder Testlauf |
+| `npm run serve` | Nodemon-Entwicklungsserver | Beim Programmieren |
+| `npm test` | Jest-Tests und SQLite-Integrationstests | Vor Pull Requests / in CI |
+| `npm run lint` | ESLint-Prüfung | Laufend und vor Commits |
+| `npm run format` | Prettier formatiert Dateien | Nach Änderungen |
+| `npm run format:check` | Formatierung prüfen | Vor Commits / in CI |
+| `npm run check` | Lint, Formatprüfung, Tests | Vor Commit / im CI |
+| `npm run dev-setup` | npm install und Docker-Build | Nach dem ersten Checkout |
+| `npm run docker:build` | Produktionsimage bauen | Vor einem Release |
+| `npm run docker:up` | Compose-Umgebung starten | Test/Deployment |
+| `npm run docker:test` | CI-Testimage bauen und darin Tests starten | CI lokal nachbilden |
 
-## Code quality and pre-commit hook
+`package.json` beschreibt die direkten Dependencies, `package-lock.json` die aufgelösten Versionen. Nach Änderungen der Dependencies `npm install` ausführen, Lockfile mitcommitten. **Vor dem finalen Release muss das bestehende Lockfile aktualisiert und `npm run format && npm run check` ausgeführt werden.**
 
-ESLint is configured in `eslint.config.js`; Prettier handles formatting. Husky installs `.husky/pre-commit` using the `prepare` npm script.
+`.husky/pre-commit` startet die Qualitätsprüfung automatisch vor Commits.
 
-Every commit runs:
-
-```bash
-npm run check
-```
-
-Only commit when linting, formatting and tests are green.
-
-## Testing
-
-Run:
-
-```bash
-npm test
-```
-
-`tests/shoppingItem.test.js` fully tests the important shopping-item validation function with valid input, optional values, boundaries and invalid input.
-
-`tests/shoppingRepository.integration.test.js` uses a real temporary SQLite database without mocking the database. It verifies that shopping items and quantities are persisted and that purchased/delete operations work correctly.
-
-For the complete quality gate:
-
-```bash
-npm run check
-```
-
-## Data model and migrations
-
-The application automatically creates the required schema on startup. The current shopping-list migration creates:
+## Architektur
 
 ```text
-shopping_items
-- id
-- name
-- quantity
-- purchased
-- created_at
+Browser (Responsive HTML/CSS)
+       |
+       v
+Express / app.js
+  |-- Login / Session + CSRF + Role Middleware
+  |-- Übersicht / Listen / Artikel / User-Verwaltung
+  |-- lib/validation.js + lib/security.js
+  |-- lib/store.js (SQL / Migrations)
+  |       |-- PostgreSQL (Produktion, eigener Container, Volume)
+  |       `-- SQLite (lokal, Integrationstests)
+  `-- lib/mailer.js ---> smtp4dev (Test-SMTP, Weboberfläche)
 ```
 
-Schema versions are recorded in `schema_migrations`.
+Express liefert klassische serverseitige HTML-Seiten via **Nunjucks** (`views/`) mit Styles in `public/styles.css`.
 
-Migration version 2 introduces the shopping-list schema. This is intentional: earlier development builds used the wrong Post-it concept. Existing development databases can therefore be upgraded safely without manual SQL; the old table is ignored by the application.
+### Relationales Datenmodell
 
-## Production Docker environment
+- `users`: Benutzername, E-Mail, Passwort-Hash, Rolle, Zeitstempel
+- `shopping_lists`: Titel, optionales Datum, verantwortlicher Benutzer, erledigt/offen
+- `list_members`: m:n-Relation zwischen Benutzern und Listen
+- `list_items`: Produkte einer Liste, Menge, gekauft/offen
+- `sessions`: gehashter Session-Token, Benutzer und Ablaufzeit
+- `schema_migrations`: ausgeführte Migrationsversionen
 
-The production-like Docker setup contains two separate containers:
+Passwörter werden mit gesalzenem **scrypt** gehasht. Cookies sind `HttpOnly` und `SameSite=Lax`. Bei echtem HTTPS `COOKIE_SECURE=true` konfigurieren. Form-POSTs verwenden einen vom Session-Token abgeleiteten CSRF-Token. Berechtigungen werden **auf dem Server** für jede Listenoperation geprüft.
 
-1. **postiliste** – the Node/Express web application.
-2. **postgres** – the external PostgreSQL database.
+Bei bestehender alter Prototyp-DB legt Migration **v3** neue Tabellen an. Die frühere globale `shopping_items`-Tabelle bleibt als Legacy-Datenbestand bestehen; sie wird nicht automatisch einer neuen Liste zugeordnet. Für eine Übernahme alter Testdaten ist eine bewusste Datenmigration nötig.
 
-Build and start them:
+### E-Mail
 
-```bash
-docker compose up --build -d
-```
+Der eingebaute SMTP-Transport ist bewusst **nur für den unverschlüsselten lokalen smtp4dev-Dummy-Server** gedacht. Er unterstützt keine externe SMTP-Authentifizierung oder TLS. Kein öffentlich erreichbares E-Mail-Gateway verwenden.
 
-Follow logs:
+Ein neuer Benutzer braucht eine E-Mail-Adresse, damit Benachrichtigungen ankommen. Benachrichtigungsfehler werden geloggt und blockieren das Speichern der Einkaufsliste nicht.
 
-```bash
-docker compose logs -f
-```
+## Tests und Abnahmekriterien
 
-Open `http://localhost:3000`.
+`tests/validation.test.js`: valide/ungültige Eingaben, Grenzfälle (Jest Unit Tests).
 
-Stop the environment while preserving shopping data:
+`tests/security.test.js`: Passwort-Hash, Login-Verifikation, Sessions/CSRF.
 
-```bash
-docker compose down
-```
+`tests/fullStore.integration.test.js`: echte temporäre SQLite-Datenbank, Benutzer, Listen, Zuweisungen, Artikel, Erledigt-Status, Neustart/Persistenz und Relationseinschränkungen.
 
-Start it again and the shopping list remains available because PostgreSQL uses a managed Docker volume.
+`tests/http.integration.test.js`: tatsächliche HTTP-Anfragen / Formular-POSTs gegen eine echte SQLite-Testdatenbank: Login, Session-Cookie, CSRF, Admin/User-Sperren, Listen-/Artikel-Erstellung.
 
-Only delete the persistent data intentionally with:
+Die Datenbank für Tests wird temporär angelegt und am Ende aufgeräumt; keine produktiven Credentials nötig.
 
-```bash
-docker compose down -v
-```
+Manuell prüfen:
+1. Admin meldet sich an und erstellt Benutzer.
+2. Benutzer A sieht Liste X, Benutzer B ohne Zuweisung nicht (auch per Direkt-URL).
+3. Admin sieht jede Liste und Benutzerverwaltung.
+4. Neue Liste, Titel/Fälligkeitsdatum/Verantwortliche/Mitglieder bearbeiten.
+5. Artikel hinzufügen, Menge setzen, abhaken und löschen.
+6. Bei Zuweisung/Änderung erscheint eine E-Mail in smtp4dev.
+7. `docker compose down`, neu starten und Daten wiederfinden.
+8. Leer-/Fehleingaben und nicht autorisierte POSTs werden zurückgewiesen.
 
-### Manual production image
+## Jenkins (CI/CD)
 
-```bash
-docker build -f docker/webapp/Dockerfile -t postiliste:1.0.0 .
-```
+Ein Jenkins-Compose-Setup ist in `docker/jenkins/` enthalten.
 
-The application source and runtime dependencies are contained in the image. No source-code bind volume is required.
-
-## Configuration
-
-| Variable | Default | Description |
-| --- | --- | --- |
-| `PORT` | `3000` | HTTP port used by Node |
-| `DATABASE_URL` | unset | PostgreSQL connection string; selects PostgreSQL when present |
-| `DB_PATH` | `./data/postiliste.db` | SQLite file used when `DATABASE_URL` is absent |
-| `NODE_ENV` | development / production | Runtime environment |
-| `POSTGRES_DB` | `postiliste` in Compose | PostgreSQL database name |
-| `POSTGRES_USER` | configured in Compose | PostgreSQL user |
-| `POSTGRES_PASSWORD` | configured in Compose | PostgreSQL password |
-
-`.env.example` documents configurable values. Real credentials or API keys must not be committed.
-
-## CI/CD with Jenkins
-
-A reproducible Jenkins environment is included in `docker/jenkins/`.
-
-Start Jenkins:
-
-```bash
+```sh
 cd docker/jenkins
 docker compose up --build -d
 ```
 
-Open `http://localhost:8080`, finish the initial setup and create a **Pipeline from SCM** job for this repository. Configure GitHub credentials/token in Jenkins and use `Jenkinsfile` as the pipeline script path.
+Unter **http://localhost:8080** Jenkins initialisieren. Einen **Pipeline from SCM** Job anlegen, das GitHub-Repository mit Zugangstoken hinterlegen und den Pfad `Jenkinsfile` setzen. Jenkins benötigt funktionierenden Docker-Zugriff, inklusive Docker-Socket-Zugriff für den lokalen Schul-Server.
 
-The Jenkins pipeline:
+Pipeline:
+1. Checkout aus GitHub (SCM)
+2. Eigenes Docker-**Testimage** bauen (mit Dev-Dependencies)
+3. `npm run check` **im Testcontainer** ausführen, inklusive echter SQLite-Integrationstests
+4. Produktionsimage mit Jenkins-Buildnummer bauen
+5. Die Compose-Umgebung starten/ersetzen
 
-1. checks out the GitHub repository,
-2. starts a clean Node 24 container,
-3. installs dependencies,
-4. runs `npm run check`,
-5. builds the production Docker image,
-6. starts/replaces the local production environment with Docker Compose.
+Periodisches SCM-Polling prüft auf neue Commits. Die Pipeline kann die gesamte Umgebung aus einem Checkout wiederherstellen.
 
-Jenkins polls the repository regularly, so pushes can trigger the pipeline automatically. The local Jenkins container mounts the Docker socket because it needs to build/start containers; this is intended for the school/dev environment.
+## Versionierung, Review und Abgabe
 
-## Release procedure
+Entwicklung erfolgt über Issue-bezogene Feature-Branches. Jede Änderung wird per Commit dem passenden Issue zugeordnet (z.B. `feat: ... (#120)`); Pull Requests werden von einem zweiten Teammitglied reviewed. Erst nach positivem Testlauf und Review in `main` mergen.
 
-1. Ensure the related GitHub issues meet their Definition of Done.
-2. Run `npm install` if dependencies changed and commit the lock-file update.
-3. Run `npm run format`.
-4. Run `npm run check`.
-5. Run `docker compose up --build` and verify the shopping-list UI and PostgreSQL persistence.
-6. Run the Jenkins pipeline successfully.
-7. Merge the reviewed feature branch through a pull request.
-8. Create a version tag such as `v1.0.0`.
-9. Build the release image using the version as its image tag.
-10. If required for hand-in, export it with `docker save postiliste:1.0.0 -o postiliste-1.0.0.tar`.
+Release-Beispiel:
 
-Database schema changes are applied automatically on startup.
-
-## Git/GitHub workflow
-
-Use feature branches instead of developing directly on `main`:
-
-```bash
-git switch -c feature/<issue-number>-short-description
-# make changes
-git add <files>
-git commit -m "Implement feature (#<issue-number>)"
-git push -u origin feature/<issue-number>-short-description
+```sh
+git switch main
+git pull
+npm install
+npm run format
+npm run check
+git tag -a v1.0.0 -m "Poschtilischte 1.0.0"
+git push origin v1.0.0
+docker build --target production -f docker/webapp/Dockerfile -t postiliste:1.0.0 .
+docker save postiliste:1.0.0 -o postiliste-1.0.0.tar
 ```
 
-Open a pull request, request a review and merge only after the checks pass. Reference issues in commits/PRs and use `Closes #<number>` when the Definition of Done is fulfilled.
+Für die vollständige Demo wird die Docker-Compose-Datei mit der Datenbank-Konfiguration benötigt. **Ein einzelnes App-Image enthält bewusst nicht die PostgreSQL-Datenbank**. Die Daten liegen persistent ausserhalb des App-Containers in einem Managed Volume.
 
-For M324 project management, add requirements as granular GitHub issues and maintain them on a GitHub Project board with **Backlog**, **In Progress** and **Done**, plus assignee, priority and target date.
+## Environment
 
-## Persistence and handover
+| Variable | Zweck |
+| --- | --- |
+| `PORT` | HTTP-Port, Standard 3000 |
+| `DATABASE_URL` | PostgreSQL-Verbindungsstring; fehlt diese Variable, wird SQLite benutzt |
+| `DB_PATH` | Dateipfad der SQLite-DB bei lokaler Entwicklung |
+| `POSTGRES_PASSWORD` | Passwort für den PostgreSQL-Container |
+| `ADMIN_USERNAME` | Benutzername des initialen Admins |
+| `ADMIN_PASSWORD` | Passwort des initialen Admins, min. 12 Zeichen |
+| `ADMIN_EMAIL` | Optionale E-Mail des initialen Admins |
+| `SESSION_SECRET` | Zufälliger Server-Schlüssel, min. 32 Zeichen |
+| `COOKIE_SECURE` | Bei HTTPS auf `true` setzen |
+| `SMTP_HOST`, `SMTP_PORT` | Nur lokaler Dummy-SMTP-Server |
+| `MAIL_FROM` | Absenderadresse für Testmails |
+| `SMTP4DEV_WEB_PORT` | Externer smtp4dev-Webport, Standard 8025 |
 
-Local development uses SQLite. The Docker production environment stores shopping-list data in the PostgreSQL managed volume `postiliste-postgres` (Docker Compose volume name may be prefixed with the project directory name).
-
-Tester setup:
-
-```bash
-git clone https://github.com/Lardomir/Postiliste.git
-cd Postiliste
-docker compose up --build -d
-```
-
-Open `http://localhost:3000`. No local Node installation or source-code volume is needed to run the Dockerized application. Stop it with `docker compose down`.
+Keine echten Geheimnisse im Git-Repository speichern. Die Beispielwerte in `.env.example` **müssen ersetzt werden**.
