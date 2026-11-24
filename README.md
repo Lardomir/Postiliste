@@ -51,7 +51,7 @@ Lokale SQLite-Entwicklung ohne Docker:
 # ADMIN_USERNAME=admin
 # ADMIN_PASSWORD=<mindestens 12 Zeichen>
 # SESSION_SECRET=<mindestens 32 Zeichen>
-npm run serve
+node --env-file=.env server.js
 ```
 
 **Hinweis:** Node lädt `.env` nicht automatisch in jeder Konfiguration. In Node 24 kann man für den lokalen Start `node --env-file=.env server.js` verwenden. `DATABASE_URL` für SQLite weglassen oder leer setzen; Standard-DB: `data/postiliste.db`. Eine laufende PostgreSQL-Instanz wird über `DATABASE_URL` gewählt.
@@ -67,14 +67,14 @@ npm run serve
 | `npm run format`       | Prettier formatiert Dateien                | Nach Änderungen           |
 | `npm run format:check` | Formatierung prüfen                        | Vor Commits / in CI       |
 | `npm run check`        | Lint, Formatprüfung, Tests                 | Vor Commit / im CI        |
-| `npm run dev-setup`    | npm install und Docker-Build               | Nach dem ersten Checkout  |
+|| `npm run dev-setup` | Installs npm, generates local secrets if absent, starts Docker Compose | Fresh checkout |npm install und Docker-Build               | Nach dem ersten Checkout  |
 | `npm run docker:build` | Produktionsimage bauen                     | Vor einem Release         |
 | `npm run docker:up`    | Compose-Umgebung starten                   | Test/Deployment           |
 | `npm run docker:test`  | CI-Testimage bauen und darin Tests starten | CI lokal nachbilden       |
 
 `package.json` beschreibt die direkten Dependencies, `package-lock.json` die aufgelösten Versionen. Nach Änderungen der Dependencies `npm install` ausführen, Lockfile mitcommitten. **Vor dem finalen Release muss das bestehende Lockfile aktualisiert und `npm run format && npm run check` ausgeführt werden.**
 
-`.husky/pre-commit` startet die Qualitätsprüfung automatisch vor Commits.
+`npm run dev-setup` erzeugt beim ersten Aufruf eine geschützte lokale `.env` mit zufälligen Zugangsdaten, führt `npm install` aus und startet den App/DB/SMTP-Stack. Die Admin-Zugangsdaten stehen ausschliesslich in `.env`. Mit `npm run dev-setup -- --jenkins` wird auch Jenkins gestartet. Bestehende `.env`-Dateien bleiben unverändert.\n\n`.husky/pre-commit` startet die Qualitätsprüfung automatisch vor Commits.
 
 ## Architektur
 
@@ -155,7 +155,33 @@ Pipeline:
 4. Produktionsimage mit Jenkins-Buildnummer bauen
 5. Die Compose-Umgebung starten/ersetzen
 
-Periodisches SCM-Polling prüft auf neue Commits. Die Pipeline kann die gesamte Umgebung aus einem Checkout wiederherstellen.
+**Jenkins-Credentials (Secret text, exakte IDs):** `postiliste-postgres-password`, `postiliste-admin-password`, `postiliste-session-secret`. Das Admin-Passwort muss mindestens 12 Zeichen, der Session-Schlüssel mindestens 32 Zeichen haben. GitHub-Checkout benötigt einen separat im Jenkins-Job hinterlegten Token. `withCredentials` übergibt die Deploy-Geheimnisse an Compose, ohne sie ins Git-Repository zu schreiben. Nach dem Deployment prüft Jenkins `/health`. Der Jenkins-Docker-Container nutzt den Host-Docker-Socket mit weitreichenden Rechten und eignet sich nur für eine vertrauenswürdige lokale Schul-Umgebung. Eine erfolgreiche Jenkins-Ausführung muss eigenständig dokumentiert werden; GitHub Actions ersetzen den Jenkins-Nachweis nicht.\n\nPeriodisches SCM-Polling prüft auf neue Commits. Die Pipeline kann die gesamte Umgebung aus einem Checkout wiederherstellen.
+
+## Standalone-Image und Bind-Mount (K11)
+
+Das Produktionsimage enthaelt alle Dateien der Node-Web-App. Mit PostgreSQL werden Daten getrennt im Compose-Volume gespeichert. Das **identische Image** kann auch ohne `DATABASE_URL` mit SQLite und einem Host-Bind-Mount laufen.
+
+```powershell
+npm run docker:build
+New-Item -ItemType Directory -Force .\\data | Out-Null
+docker run --rm --name postiliste-sqlite -p 3001:3000 `
+  --mount "type=bind,source=$((Get-Location).Path)\\data,target=/app/data" `
+  -e NODE_ENV=production -e ADMIN_USERNAME=admin `
+  -e ADMIN_PASSWORD="YourUniqueAdminPassword123" `
+  -e SESSION_SECRET="UseAUniqueRandomSessionSecretLongerThan32Chars" `
+  postiliste:local
+```
+
+Unter http://localhost:3001 pruefen. `data/postiliste.db` befindet sich danach auf dem Host. Derselbe Mount erhaelt die Daten bei einem Neustart. Unter Linux muss das Host-Verzeichnis fuer den nicht-root Container beschreibbar sein. Fuer echte Deployments Secret-Werte nicht in Shell-Befehlen ausgeben, sondern `--env-file` verwenden.
+
+```sh
+docker build --target production -f docker/webapp/Dockerfile -t postiliste:1.0.0 .
+docker save postiliste:1.0.0 -o postiliste-1.0.0.tar
+# Auf dem Abnahmegeraet:
+docker load -i postiliste-1.0.0.tar
+```
+
+Der TAR-Export umfasst bewusst nicht das externe Datenbankvolume. Fuer die PostgreSQL-Variante die Compose-Datei und .env-Beispiel mitgeben, Geheimnisse separat setzen.
 
 ## Versionierung, Review und Abgabe
 
