@@ -32,3 +32,30 @@ jobs:
           fi
       - name: Lint, formatting and tests
         run: npm run check
+
+  docker-smoke:
+    needs: validate
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure disposable credentials
+        run: |
+          printf 'POSTGRES_PASSWORD=CI_DB_Password_123\nADMIN_USERNAME=admin\nADMIN_PASSWORD=CI_Admin_Password_123\nSESSION_SECRET=ci-only-random-test-session-secret-12345\n' > .env
+      - name: Start production Compose stack
+        run: docker compose up --build -d
+      - name: Verify web and database startup
+        run: |
+          for i in {1..30}; do
+            if curl --fail --silent http://localhost:3000/health; then exit 0; fi
+            sleep 3
+          done
+          docker compose logs --tail=100
+          exit 1
+      - name: Check smtp4dev API
+        run: curl --fail --silent http://localhost:8025/api/messages
+      - name: Show logs if startup failed
+        if: failure()
+        run: docker compose logs --tail=150
+      - name: Stop test services
+        if: always()
+        run: docker compose down
