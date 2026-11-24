@@ -68,6 +68,17 @@ describe("HTTP forms against a real SQLite test database", () => {
     await store.close();
   });
 
+  test("creation forms display validation error feedback", async () => {
+    const list = await fetch(root + "/lists/new?error=Listenname%20fehlt", {
+      headers: { cookie: adminCookie },
+    });
+    expect(await list.text()).toContain("Listenname fehlt");
+    const user = await fetch(root + "/admin/users/new?error=Passwort%20ungueltig", {
+      headers: { cookie: adminCookie },
+    });
+    expect(await user.text()).toContain("Passwort ungueltig");
+  });
+
   test("redirects unauthenticated users to login", async () => {
     const response = await fetch(root + "/", { redirect: "manual" });
     expect(response.status).toBe(302);

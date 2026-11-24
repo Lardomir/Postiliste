@@ -3,3 +3,6 @@ node_modules/
 .env
 data/
 coverage/
+
+local-postgres-data/
+smoke-state.json
