@@ -58,19 +58,19 @@ node --env-file=.env server.js
 
 ## npm-Scripts
 
-| Script                 | Funktion                                   | Wann?                     |
-| ---------------------- | ------------------------------------------ | ------------------------- |
-| `npm start`            | Server starten                             | Produktiv oder Testlauf   |
-| `npm run serve`        | Nodemon-Entwicklungsserver                 | Beim Programmieren        |
-| `npm test`             | Jest-Tests und SQLite-Integrationstests    | Vor Pull Requests / in CI |
-| `npm run lint`         | ESLint-Prüfung                             | Laufend und vor Commits   |
-| `npm run format`       | Prettier formatiert Dateien                | Nach Änderungen           |
-| `npm run format:check` | Formatierung prüfen                        | Vor Commits / in CI       |
-| `npm run check`        | Lint, Formatprüfung, Tests                 | Vor Commit / im CI        |
-|| `npm run dev-setup` | Installs npm, generates local secrets if absent, starts Docker Compose | Fresh checkout |npm install und Docker-Build               | Nach dem ersten Checkout  |
-| `npm run docker:build` | Produktionsimage bauen                     | Vor einem Release         |
-| `npm run docker:up`    | Compose-Umgebung starten                   | Test/Deployment           |
-| `npm run docker:test`  | CI-Testimage bauen und darin Tests starten | CI lokal nachbilden       |
+| Script                 | Funktion                                   | Wann?                                                                  |
+| ---------------------- | ------------------------------------------ | ---------------------------------------------------------------------- |
+| `npm start`            | Server starten                             | Produktiv oder Testlauf                                                |
+| `npm run serve`        | Nodemon-Entwicklungsserver                 | Beim Programmieren                                                     |
+| `npm test`             | Jest-Tests und SQLite-Integrationstests    | Vor Pull Requests / in CI                                              |
+| `npm run lint`         | ESLint-Prüfung                             | Laufend und vor Commits                                                |
+| `npm run format`       | Prettier formatiert Dateien                | Nach Änderungen                                                        |
+| `npm run format:check` | Formatierung prüfen                        | Vor Commits / in CI                                                    |
+| `npm run check`        | Lint, Formatprüfung, Tests                 | Vor Commit / im CI                                                     |
+|                        | `npm run dev-setup`                        | Installs npm, generates local secrets if absent, starts Docker Compose | Fresh checkout | npm install und Docker-Build | Nach dem ersten Checkout |
+| `npm run docker:build` | Produktionsimage bauen                     | Vor einem Release                                                      |
+| `npm run docker:up`    | Compose-Umgebung starten                   | Test/Deployment                                                        |
+| `npm run docker:test`  | CI-Testimage bauen und darin Tests starten | CI lokal nachbilden                                                    |
 
 `package.json` beschreibt die direkten Dependencies, `package-lock.json` die aufgelösten Versionen. Nach Änderungen der Dependencies `npm install` ausführen, Lockfile mitcommitten. **Vor dem finalen Release muss das bestehende Lockfile aktualisiert und `npm run format && npm run check` ausgeführt werden.**
 
