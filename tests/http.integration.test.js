@@ -169,7 +169,7 @@ describe("HTTP forms against a real SQLite test database", () => {
       _csrf: adminCsrf,
       title: "Teilbare Liste",
       responsibleUserId: String(adminId),
-      memberIds: [String(adminId), String(guestId)],
+      memberIds: String(guestId),
     });
     expect(addResponse.status).toBe(302);
     expect(sendMail).toHaveBeenCalledWith(
