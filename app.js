@@ -282,7 +282,9 @@ function createApp(options = {}) {
       if (!(await store.validUsers(data.memberIds)))
         throw new Error("Ungültige Benutzerzuweisung.");
       await store.updateList(req.list.id, data);
-      const removedIds = [...before].filter((id) => !data.memberIds.includes(id));
+      const removedIds = [...before].filter(
+        (id) => !data.memberIds.includes(id),
+      );
       const newIds = data.memberIds.filter((id) => !before.has(id));
       const unchangedIds = data.memberIds.filter((id) => before.has(id));
       await notifyUsers(
