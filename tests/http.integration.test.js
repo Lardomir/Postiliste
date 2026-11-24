@@ -73,9 +73,12 @@ describe("HTTP forms against a real SQLite test database", () => {
       headers: { cookie: adminCookie },
     });
     expect(await list.text()).toContain("Listenname fehlt");
-    const user = await fetch(root + "/admin/users/new?error=Passwort%20ungueltig", {
-      headers: { cookie: adminCookie },
-    });
+    const user = await fetch(
+      root + "/admin/users/new?error=Passwort%20ungueltig",
+      {
+        headers: { cookie: adminCookie },
+      },
+    );
     expect(await user.text()).toContain("Passwort ungueltig");
   });
 

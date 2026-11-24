@@ -28,7 +28,9 @@ if (!fs.existsSync(envFile)) {
     "",
   ].join("\n");
   fs.writeFileSync(envFile, env, { mode: 0o600, flag: "wx" });
-  console.log("Local .env generated. Open it to find the initial admin credentials.");
+  console.log(
+    "Local .env generated. Open it to find the initial admin credentials.",
+  );
 } else {
   console.log("Using existing .env (credentials are not overwritten).");
 }
@@ -45,7 +47,14 @@ run("npm", ["install"]);
 run("docker", ["compose", "up", "--build", "-d"]);
 if (process.argv.includes("--jenkins")) {
   run("docker", [
-    "compose", "-f", "docker/jenkins/docker-compose.yml", "up", "--build", "-d",
+    "compose",
+    "-f",
+    "docker/jenkins/docker-compose.yml",
+    "up",
+    "--build",
+    "-d",
   ]);
 }
-console.log("Poschtilischte: http://localhost:3000 | smtp4dev: http://localhost:8025");
+console.log(
+  "Poschtilischte: http://localhost:3000 | smtp4dev: http://localhost:8025",
+);
