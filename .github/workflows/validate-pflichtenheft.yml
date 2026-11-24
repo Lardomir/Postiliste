@@ -1,0 +1,34 @@
+name: Validate full Pflichtenheft branch
+
+on:
+  push:
+    branches:
+      - feature/full-pflichtenheft-2026
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install dependencies and update lockfile
+        run: npm install
+      - name: Apply Prettier formatting
+        run: npm run format
+      - name: Commit formatted code and updated lockfile
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: format files and refresh dependency lockfile"
+            git push
+          fi
+      - name: Lint, formatting and tests
+        run: npm run check

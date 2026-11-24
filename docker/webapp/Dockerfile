@@ -2,7 +2,7 @@ FROM node:24-trixie-slim AS base
 WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm install
-COPY --chown=node:node app.js server.js repositoryFactory.js shoppingItem.js shoppingRepository.js postgresShoppingRepository.js ./
+COPY --chown=node:node app.js server.js ./
 COPY --chown=node:node lib ./lib
 COPY --chown=node:node views ./views
 COPY --chown=node:node public ./public
