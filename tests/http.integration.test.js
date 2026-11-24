@@ -117,9 +117,15 @@ describe("HTTP forms against a real SQLite test database", () => {
     });
     expect(product.status).toBe(302);
     const itemId = (await store.items(Number(location.split("/").pop())))[0].id;
-    const edited = await send(location + "/items/" + itemId + "/edit", userCookie, {
-      _csrf: userCsrf, name: "Vollkornbrot", quantity: "3",
-    });
+    const edited = await send(
+      location + "/items/" + itemId + "/edit",
+      userCookie,
+      {
+        _csrf: userCsrf,
+        name: "Vollkornbrot",
+        quantity: "3",
+      },
+    );
     expect(edited.status).toBe(302);
     const page = await fetch(root + location, {
       headers: { cookie: userCookie },
