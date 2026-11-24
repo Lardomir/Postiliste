@@ -53,6 +53,19 @@ jobs:
           exit 1
       - name: Check smtp4dev API
         run: curl --fail --silent http://localhost:8025/api/messages
+      - name: Exercise login, users, lists and SMTP notifications
+        run: node scripts/smoke.js create
+      - name: Restart without deleting database volume
+        run: |
+          docker compose down
+          docker compose up -d
+          for i in {1..30}; do
+            if curl --fail --silent http://localhost:3000/health; then exit 0; fi
+            sleep 3
+          done
+          exit 1
+      - name: Verify database persistence
+        run: node scripts/smoke.js verify
       - name: Show logs if startup failed
         if: failure()
         run: docker compose logs --tail=150
